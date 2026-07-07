@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+*.log
+vite-dev.pid
+*.xlsx
+*.xls
+*.ppt
+*.pptx
+/data/
+docs/stitch-reference/
