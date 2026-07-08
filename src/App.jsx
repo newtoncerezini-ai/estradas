@@ -603,31 +603,41 @@ function CustoKmTab({ rows, onDrillDown }) {
 
   return (
     <div className="slide">
-      <div className="two-col">
-        <section className="panel">
-          <div className="slide-head">
-            <h2>Obras comuns</h2>
-            <p>Ranking de custo por km sem trechos especiais muito curtos.</p>
-          </div>
-          <ResponsiveContainer width="100%" height={330}>
-            <BarChart data={common} layout="vertical" margin={{ left: 22, right: 24 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" tickFormatter={(value) => `${Math.round(value / 1000000)} mi/km`} />
-              <YAxis dataKey="rodovia" type="category" width={120} />
-              <Tooltip formatter={(value) => currency(value)} />
-              <Bar dataKey="custoKm" fill="#60a5fa" radius={[0, 8, 8, 0]} onClick={(entry) => onDrillDown({ title: `Custo/km | ${chartPayload(entry).rodovia}`, rows: [chartPayload(entry)], columns: costColumns() })} className="chart-clickable" />
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
-        <section className="panel">
-          <div className="slide-head">
-            <h2>Obras especiais</h2>
-            <p>Túneis, viadutos, passarelas ou trechos curtos tratados separadamente.</p>
-          </div>
-          <DataTable rows={special} columns={costColumns()} />
-        </section>
-      </div>
+      <section className="panel cost-chart-panel">
+        <div className="slide-head">
+          <h2>Obras comuns</h2>
+          <p>Ranking de custo por km sem túneis, viadutos, passarelas ou trechos muito curtos.</p>
+        </div>
+        <ResponsiveContainer width="100%" height={440}>
+          <BarChart data={common} layout="vertical" margin={{ left: 24, right: 56, top: 8, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" tickFormatter={(value) => `${Math.round(value / 1000000)} mi/km`} />
+            <YAxis dataKey="rodovia" type="category" width={190} tick={{ width: 180 }} />
+            <Tooltip formatter={(value) => currency(value)} />
+            <Bar
+              dataKey="custoKm"
+              fill="#60a5fa"
+              radius={[0, 8, 8, 0]}
+              onClick={(entry) => onDrillDown({ title: `Custo/km | ${chartPayload(entry).rodovia}`, rows: [chartPayload(entry)], columns: costColumns() })}
+              className="chart-clickable"
+            >
+              <LabelList dataKey="custoKm" position="right" formatter={(value) => `${Math.round(value / 1000000)} mi/km`} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </section>
       <section className="panel">
+        <div className="slide-head">
+          <h2>Obras especiais</h2>
+          <p>Túneis, viadutos, passarelas ou trechos curtos tratados separadamente para evitar comparação injusta.</p>
+        </div>
+        <DataTable rows={special} columns={costColumns()} />
+      </section>
+      <section className="panel">
+        <div className="slide-head">
+          <h2>Ranking completo</h2>
+          <p>Lista geral de custo por km, incluindo obras comuns e especiais.</p>
+        </div>
         <DataTable rows={values.slice(0, 30)} columns={costColumns()} />
       </section>
     </div>

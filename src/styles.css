@@ -1180,6 +1180,16 @@ tr:hover td {
   cursor: pointer;
 }
 
+.cost-chart-panel .recharts-label-list text {
+  fill: #eaf2ff !important;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cost-chart-panel .recharts-yAxis .recharts-cartesian-axis-tick-value {
+  font-size: 11px;
+}
+
 .drilldown-modal {
   width: min(1280px, calc(100vw - 48px));
 }
