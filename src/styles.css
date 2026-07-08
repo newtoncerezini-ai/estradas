@@ -1297,6 +1297,37 @@ tr:hover td {
   line-height: 1.5;
 }
 
+.print-note-head {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.16);
+}
+
+.print-note-head img {
+  width: 54px;
+  height: auto;
+}
+
+.print-note-head strong,
+.print-note-head span {
+  display: block;
+}
+
+.print-note-head strong {
+  color: #172033;
+  font-size: 1rem;
+}
+
+.print-note-head span {
+  margin-top: 3px;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .detail-modal {
   width: min(1120px, calc(100vw - 48px));
   max-height: 90vh;
@@ -1527,9 +1558,52 @@ tr:hover td {
 }
 
 @media print {
-  body { background: #fff; color: #000; }
-  .app { padding: 0; }
-  .toolbar { display: none; }
-  .hero, .panel, .kpi, .table-wrap { box-shadow: none; border: 1px solid #eee; backdrop-filter: none; background: #fff; }
-  .hero h1 { -webkit-text-fill-color: #000; }
+  @page {
+    margin: 14mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .printable-note,
+  .printable-note * {
+    visibility: visible !important;
+  }
+
+  .printable-note {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    color: #111827 !important;
+    box-shadow: none !important;
+  }
+
+  .print-note-head {
+    display: flex !important;
+  }
+
+  .printable-note pre {
+    white-space: pre-wrap !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 10.5pt !important;
+    line-height: 1.45 !important;
+  }
+
+  .note-screen-only,
+  .hero,
+  .toolbar,
+  .modal-backdrop {
+    display: none !important;
+  }
 }

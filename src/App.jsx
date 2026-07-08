@@ -160,6 +160,20 @@ function StatusPill({ value }) {
   );
 }
 
+function PdfIcon() {
+  return (
+    <svg className="button-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+      <path d="M14 3v6h6" />
+      <path d="M7 15h2a2 2 0 0 0 0-4H7v6" />
+      <path d="M12 17v-6h2a2 2 0 0 1 0 4h-2" />
+      <path d="M17 11h2" />
+      <path d="M17 14h1.5" />
+      <path d="M17 17v-6" />
+    </svg>
+  );
+}
+
 function buildOverview(obras, licitacoes, reabilita) {
   const totalInvestimento = obras.reduce((sum, item) => sum + (item.investimentoTotal || 0), 0);
   const totalMedido = obras.reduce((sum, item) => sum + (item.valorMedido || 0), 0);
@@ -1307,23 +1321,43 @@ function TechnicalNoteTab({ obras, licitacoes }) {
   const [selectedId, setSelectedId] = useState(candidates[0]?.id || "");
   const selected = candidates.find((item) => String(item.id) === String(selectedId)) || candidates[0];
   const text = selected ? generateTechnicalNote(selected) : "";
+  const [isPrintingNote, setIsPrintingNote] = useState(false);
+
+  function exportPdf() {
+    setIsPrintingNote(true);
+    window.setTimeout(() => {
+      window.print();
+      window.setTimeout(() => setIsPrintingNote(false), 500);
+    }, 50);
+  }
 
   return (
-    <div className="slide">
+    <div className={isPrintingNote ? "slide is-printing-note" : "slide"}>
       <section className="panel">
-        <div className="slide-head">
+        <div className="slide-head note-screen-only">
           <h2>Última observação automática</h2>
           <p>Modelo inicial de nota técnica montada a partir dos campos de status, contrato, avanço, interferências e observações.</p>
         </div>
-        <div className="table-actions">
+        <div className="table-actions note-screen-only">
           <div className="filter-field">
             <span>Rodovia</span>
             <select value={selectedId} onChange={(event) => setSelectedId(event.target.value)}>
               {candidates.map((item) => <option key={`${item.id}-${item.rodovia}`} value={item.id}>{item.rodovia}</option>)}
             </select>
           </div>
+          <button className="export-button" type="button" onClick={exportPdf} disabled={!selected}>
+            <PdfIcon />
+            Exportar PDF
+          </button>
         </div>
-        <article className="note-box">
+        <article className="note-box printable-note">
+          <header className="print-note-head">
+            <img src="/assets/media/governo-pe-brasao-transparent.png" alt="Governo de Pernambuco" />
+            <div>
+              <strong>Governo de Pernambuco</strong>
+              <span>Nota técnica automática | Monitoramento de Estradas</span>
+            </div>
+          </header>
           <pre>{text}</pre>
         </article>
       </section>
