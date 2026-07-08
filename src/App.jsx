@@ -485,6 +485,54 @@ function FarolRiscoTab({ rows, onDrillDown }) {
             </button>
           ))}
         </div>
+        <div className="risk-methodology">
+          <div>
+            <p className="eyebrow">Metodologia</p>
+            <h3>Como calculamos a criticidade</h3>
+            <p>
+              A nota vai de 0 a 100 pontos e soma sinais de risco operacional, financeiro e cadastral.
+              Quanto maior a nota, maior a prioridade de acompanhamento na reunião.
+            </p>
+          </div>
+          <div className="risk-method-grid">
+            <div className="risk-method-card">
+              <span>Baixo avanço físico</span>
+              <strong>até 28 pts</strong>
+              <p>Menos de 10% físico soma 28 pts; entre 10% e 25% soma 18 pts; entre 25% e 50% soma 8 pts.</p>
+            </div>
+            <div className="risk-method-card">
+              <span>Alto investimento</span>
+              <strong>até 22 pts</strong>
+              <p>Obras acima de R$ 100 mi somam 22 pts; acima de R$ 50 mi somam 15 pts; acima de R$ 20 mi somam 8 pts.</p>
+            </div>
+            <div className="risk-method-card">
+              <span>Financeiro acima do físico</span>
+              <strong>até 24 pts</strong>
+              <p>Quando o financeiro calculado supera o físico em 25 p.p. ou mais soma 24 pts; acima de 15 p.p. soma 14 pts.</p>
+            </div>
+            <div className="risk-method-card">
+              <span>Dados contratuais e medição</span>
+              <strong>até 18 pts</strong>
+              <p>Obra em execução sem empresa soma 10 pts. Obra em execução sem valor medido soma 8 pts.</p>
+            </div>
+            <div className="risk-method-card">
+              <span>Entraves em observações</span>
+              <strong>14 pts</strong>
+              <p>Termos como aguardando, pendente, PGE, licença, autorização, empenho, chuva, interferência, paralisado, lento ou DDO somam risco.</p>
+            </div>
+            <div className="risk-method-card">
+              <span>Obra em execução</span>
+              <strong>12 pts</strong>
+              <p>A tela prioriza obras em execução. Esse status soma uma base de 12 pontos antes dos demais fatores.</p>
+            </div>
+          </div>
+          <div className="risk-scale">
+            <span><i className="scale-critical" /> Crítico: 70 a 100 pts</span>
+            <span><i className="scale-warning" /> Atenção: 45 a 69 pts</span>
+            <span><i className="scale-watch" /> Monitorar: 20 a 44 pts</span>
+            <span><i className="scale-regular" /> Regular: abaixo de 20 pts</span>
+          </div>
+        </div>
       </section>
       <section className="panel">
         <div className="slide-head">
