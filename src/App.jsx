@@ -60,6 +60,15 @@ function normalize(value) {
   return (value || "").toString().trim().toUpperCase();
 }
 
+function rdKey(value) {
+  return normalize(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/^REGIAO\s+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function statusColor(value) {
   const key = normalize(value);
   return STATUS_COLORS[key] || Object.entries(STATUS_COLORS).find(([status]) => key.includes(status))?.[1] || "#56ccf2";
@@ -647,6 +656,30 @@ function CustoKmTab({ rows, onDrillDown }) {
 function MapaCalorRdTab({ rows, onDrillDown }) {
   const heat = regionalHeat(rows);
   const maxCritical = Math.max(...heat.map((row) => row.criticas), 1);
+  const [rdFeatures, setRdFeatures] = useState([]);
+  const [selectedRd, setSelectedRd] = useState("");
+  const width = 980;
+  const height = 560;
+  const rdLookup = useMemo(() => new Map(heat.map((row) => [rdKey(row.name), row])), [heat]);
+  const selectedHeat = heat.find((row) => rdKey(row.name) === rdKey(selectedRd)) || heat[0] || {};
+  const bounds = useMemo(() => boundsFromFeatures(rdFeatures), [rdFeatures]);
+  const project = useMemo(() => createProjector(bounds, width, height), [bounds]);
+  const rdColor = (rdName) => {
+    const item = rdLookup.get(normalize(rdName));
+    if (!item) return "rgba(148, 163, 184, 0.22)";
+    const ratio = item.criticas / maxCritical;
+    if (ratio >= 0.75) return "rgba(251, 113, 133, 0.78)";
+    if (ratio >= 0.4) return "rgba(251, 191, 36, 0.72)";
+    if (item.criticas > 0) return "rgba(96, 165, 250, 0.64)";
+    return "rgba(52, 211, 153, 0.42)";
+  };
+
+  useEffect(() => {
+    fetch("/data/pernambuco-rd.geojson", { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((payload) => setRdFeatures(payload?.features || []))
+      .catch(() => setRdFeatures([]));
+  }, []);
 
   return (
     <div className="slide">
@@ -655,21 +688,69 @@ function MapaCalorRdTab({ rows, onDrillDown }) {
           <h2>Mapa de calor por RD</h2>
           <p>Concentração territorial de investimento, km e obras críticas.</p>
         </div>
-        <div className="rd-heat-grid">
-          {heat.map((row) => (
+        <div className="rd-map-layout">
+          <div className="map-canvas rd-map-canvas">
+            <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Mapa de calor por Região de Desenvolvimento">
+              {rdFeatures.map((feature, index) => {
+                const rdName = feature.properties?.rd_nome || "Não informado";
+                const isSelected = selectedRd === rdName;
+                return (
+                  <path
+                    key={`${feature.properties?.codarea}-${index}`}
+                    className={`rd-map-shape ${isSelected ? "is-selected" : ""}`}
+                    d={geometryPath(feature.geometry, project)}
+                    fill={rdColor(rdName)}
+                    onMouseEnter={() => setSelectedRd(rdName)}
+                    onClick={() => onDrillDown({
+                      title: `RD | ${rdName}`,
+                    rows: rows.filter((item) => rdKey(item.regiaoDesenvolvimento) === rdKey(rdName)),
+                      columns: obraColumns()
+                    })}
+                  >
+                    <title>{rdName}</title>
+                  </path>
+                );
+              })}
+            </svg>
+            <div className="map-legend">
+              <span><i style={{ background: "rgba(251, 113, 133, 0.78)" }} /> Mais críticas</span>
+              <span><i style={{ background: "rgba(251, 191, 36, 0.72)" }} /> Atenção</span>
+              <span><i style={{ background: "rgba(96, 165, 250, 0.64)" }} /> Monitorar</span>
+              <span><i style={{ background: "rgba(52, 211, 153, 0.42)" }} /> Sem críticas</span>
+            </div>
+          </div>
+          <aside className="map-detail rd-map-detail">
+            <div>
+              <p className="eyebrow">Região selecionada</p>
+              <h3>{selectedHeat.name || "Passe o mouse no mapa"}</h3>
+            </div>
+            <dl>
+              <dt>Obras críticas</dt>
+              <dd>{selectedHeat.criticas ?? "-"}</dd>
+              <dt>Investimento</dt>
+              <dd>{currency(selectedHeat.investimento)}</dd>
+              <dt>Valor medido</dt>
+              <dd>{currency(selectedHeat.medido)}</dd>
+              <dt>Financeiro</dt>
+              <dd>{percent(selectedHeat.financeiro)}</dd>
+              <dt>Extensão</dt>
+              <dd>{km(selectedHeat.km)} km</dd>
+              <dt>Km recuperados</dt>
+              <dd>{km(selectedHeat.recuperado)} km</dd>
+            </dl>
             <button
+              className="export-button map-open-button"
               type="button"
-              className="rd-heat-card"
-              key={row.name}
-              style={{ borderColor: `rgba(251, 113, 133, ${0.18 + row.criticas / maxCritical * 0.55})` }}
-              onClick={() => onDrillDown({ title: `RD | ${row.name}`, rows: rows.filter((item) => item.regiaoDesenvolvimento === row.name), columns: obraColumns() })}
+              disabled={!selectedHeat.name}
+              onClick={() => onDrillDown({
+                title: `RD | ${selectedHeat.name}`,
+                rows: rows.filter((item) => rdKey(item.regiaoDesenvolvimento) === rdKey(selectedHeat.name)),
+                columns: obraColumns()
+              })}
             >
-              <span>{row.name}</span>
-              <strong>{row.criticas} críticas</strong>
-              <em>{currency(row.investimento)}</em>
-              <small>{km(row.km)} km | {percent(row.financeiro)} financeiro</small>
+              Ver obras da RD
             </button>
-          ))}
+          </aside>
         </div>
       </section>
       <section className="panel">
